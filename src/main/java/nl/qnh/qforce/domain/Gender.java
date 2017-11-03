@@ -16,6 +16,11 @@
 
 package nl.qnh.qforce.domain;
 
+/**
+ * The gender.
+ *
+ * @author QNH
+ */
 public enum Gender {
 
     MALE, FEMALE, UNKNOWN, NOT_APPLICABLE
