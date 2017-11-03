@@ -5,12 +5,12 @@ It uses the https://swapi.co/ to retrieve the actual Star Wars characters.
 
 ## Objective
 
-Create a REST endpoint to search Star Wars characters by name and retrieve them by id.
+Create a REST endpoint to search Star Wars characters by name or retrieve them by id.
 
 The endpoint should look like:
 
-`/persons?q=r2`
-`/persons/{id}`
+* Search: `/persons?q=r2`
+* Get: `/persons/{id}`
 
 The search endpoint should return a list of `Person` resources.
 
@@ -50,6 +50,7 @@ The api should write analytics to a (embedded) database to keep track how many t
 * The project should use the `nl.qnh.qforce.domain` and `nl.qnh.qforce.service` interfaces. Implementations must be developed.
 * The https://swapi.co/ must be used to retrieve the external people data.
 * Jackson object mapper (https://github.com/FasterXML/jackson) should be used for marshalling and unmarshalling JSON.
+* The QForce api should return the JSON data in snake case format.
 * Unit and integration tests should be written.
 * An embedded database (e.g. H2) should be used for storing the analytics.
 
