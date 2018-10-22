@@ -42,7 +42,7 @@ The get endpoint should return a single `Person` resource and if the id does not
 The api should write analytics to a (embedded) database to keep track how many times the api is called.
 
 
-## Requirements
+## Requirements / Objectives
 
 * Fork this project.
 * Setup a decent build environment (Maven or Gradle).
