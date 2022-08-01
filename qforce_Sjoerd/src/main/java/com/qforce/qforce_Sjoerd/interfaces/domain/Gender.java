@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nl.qnh.qforce.domain;
+package com.qforce.qforce_Sjoerd.interfaces.domain;
 
 /**
  * The gender.
