@@ -15,13 +15,12 @@ public class MainController {
     PersonServiceLogic personServiceLogic = new PersonServiceLogic();
 
     @GetMapping("/persons")
-    String test(@RequestParam String q) {
-        List<Person> people = personServiceLogic.search(q);
-        return "Hello";
+    List<Person> search(@RequestParam String q) throws JsonProcessingException {
+        return personServiceLogic.search(q);
     }
 
     @RequestMapping("/persons/{id}")
-    PersonResource testing(@PathVariable long id) throws JsonProcessingException {
+    PersonResource get(@PathVariable long id) throws JsonProcessingException {
         Optional<Person> person = personServiceLogic.get(id);
         PersonResource resource = (PersonResource) person.get();
         return resource;

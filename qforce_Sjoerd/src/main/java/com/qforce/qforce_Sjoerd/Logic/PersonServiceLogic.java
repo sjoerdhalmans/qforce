@@ -1,6 +1,7 @@
 package com.qforce.qforce_Sjoerd.Logic;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,8 +18,58 @@ import java.util.*;
 public class PersonServiceLogic implements com.qforce.qforce_Sjoerd.interfaces.service.PersonService {
     ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     @Override
-    public List<Person> search(String query) {
-        return null;
+    public List<Person> search(String query) throws JsonProcessingException {
+        List<Person> populatedPeople = new ArrayList<>();
+        String uri = "https://swapi.dev/api/people?search=" + query;
+        RestTemplate template = new RestTemplate();
+        String result = template.getForObject(uri, String.class);
+        JsonNode resource = mapper.readValue(result, JsonNode.class);
+        String json = resource.get("results").toString();
+
+        List<JsonNode> people = mapper.readValue(json, new TypeReference<List<JsonNode>>(){});
+
+        if (resource.get("next").textValue() != null) {
+            people = iteratePeople(people, resource.get("next").textValue());
+        }
+
+        for (JsonNode node : people) {
+            Integer id = getId(node);
+            populatedPeople.add(populatePerson(node, id));
+        }
+
+        return populatedPeople;
+    }
+
+    private Integer getId(JsonNode node) {
+        String uri = node.get("url").textValue();
+        uri = uri.substring(0, uri.length() - 1);
+
+        uri = uri.substring(uri.lastIndexOf("/")+1, uri.length());
+
+        return Integer.parseInt(uri);
+    }
+
+    private List<JsonNode> iteratePeople(List<JsonNode> people, String nextUri) throws JsonProcessingException {
+        boolean done = false;
+        RestTemplate template = new RestTemplate();
+
+        while (!done) {
+            String result = template.getForObject(nextUri, String.class);
+            JsonNode resource = mapper.readValue(result, JsonNode.class);
+            String json = resource.get("results").toString();
+
+            List<JsonNode> newPeople = mapper.readValue(json, new TypeReference<List<JsonNode>>(){});
+            people.addAll(newPeople);
+
+            if (resource.get("next").textValue() != null) {
+                nextUri = resource.get("next").textValue();
+            }
+            else {
+                done = true;
+            }
+        }
+
+        return people;
     }
 
     @Override
@@ -76,6 +127,10 @@ public class PersonServiceLogic implements com.qforce.qforce_Sjoerd.interfaces.s
     }
 
     private Integer cleanInteger(String weight) {
+        if (weight.equals("unknown")) {
+            return 0;
+        }
+
         if (weight.contains(",")) {
             weight = weight.replace(",", "");
         }
@@ -89,12 +144,22 @@ public class PersonServiceLogic implements com.qforce.qforce_Sjoerd.interfaces.s
         return Integer.parseInt(weight);
     }
 
+    private Integer getHeight(JsonNode node) {
+        if (node.get("height").textValue().equals("unknown")) {
+            return 0;
+        }
+        else {
+            return Integer.parseInt(node.get("height").textValue());
+        }
+    }
+
     private PersonResource populatePerson(JsonNode resource, long id) throws JsonProcessingException {
         String genderString = resource.get("gender").textValue().toUpperCase();
         genderString = adjustGenderText(genderString);
         Gender gender = Gender.valueOf(genderString);
         List<Movie> movies = populateMovies(resource.get("films").toString());
         String weightString = resource.get("mass").textValue();
+        Integer height = getHeight(resource);
 
         PersonResource resources = new PersonResource();
 
@@ -103,9 +168,9 @@ public class PersonServiceLogic implements com.qforce.qforce_Sjoerd.interfaces.s
                 resource.get("name").textValue(),
                 resource.get("birth_year").textValue(),
                 gender,
-                Integer.parseInt(resource.get("height").textValue()),
+                height,
                 cleanInteger(weightString),
                 movies
-                );
+        );
     }
 }

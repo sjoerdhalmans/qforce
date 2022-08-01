@@ -35,7 +35,7 @@ public interface PersonService {
      * @param query the query string
      * @return the list of persons
      */
-    List<Person> search(String query);
+    List<Person> search(String query) throws JsonProcessingException;
 
     /**
      * Returns the person with the provided id.
