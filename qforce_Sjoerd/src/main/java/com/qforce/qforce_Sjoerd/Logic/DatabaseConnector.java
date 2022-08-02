@@ -5,9 +5,11 @@ import com.qforce.qforce_Sjoerd.repositories.LogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class DatabaseConnector {
-    private long counter = 0;
+    public long counter = 0;
     private final LogRepository logRepository;
 
     @Autowired

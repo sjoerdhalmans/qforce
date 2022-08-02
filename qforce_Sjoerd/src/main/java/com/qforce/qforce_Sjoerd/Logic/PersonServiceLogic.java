@@ -13,9 +13,24 @@ import com.qforce.qforce_Sjoerd.models.PersonResource;
 import com.qforce.qforce_Sjoerd.repositories.LogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+
+/**
+ * I chose to write all logic in one class
+ * as the application is not large enough
+ * that it needs to be divided
+ * <p>
+ * I chose to manually create person resources instead of automatically
+ * transforming them from JSON as there were a lot of irregularities
+ * in the incoming data and the data types I needed them to be
+ * (I would have done this differently if I were allowed to change
+ * the provided interfaces)
+ */
+
 @Service
 public class PersonServiceLogic implements com.qforce.qforce_Sjoerd.interfaces.service.PersonService {
     ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -26,6 +41,7 @@ public class PersonServiceLogic implements com.qforce.qforce_Sjoerd.interfaces.s
     public PersonServiceLogic(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
     }
+
     @Override
     public List<Person> search(String query) throws JsonProcessingException {
         databaseConnector.logSearch(query);
@@ -89,7 +105,13 @@ public class PersonServiceLogic implements com.qforce.qforce_Sjoerd.interfaces.s
 
         String uri = "https://swapi.dev/api/people/" + id;
         RestTemplate template = new RestTemplate();
-        String result = template.getForObject(uri, String.class);
+        String result = "";
+        try {
+            result = template.getForObject(uri, String.class);
+        } catch (final HttpClientErrorException error) {
+            return Optional.empty();
+        }
+
         JsonNode resource = mapper.readValue(result, JsonNode.class);
         PersonResource person = populatePerson(resource, id);
 
@@ -173,8 +195,6 @@ public class PersonServiceLogic implements com.qforce.qforce_Sjoerd.interfaces.s
         List<Movie> movies = populateMovies(resource.get("films").toString());
         String weightString = resource.get("mass").textValue();
         Integer height = getHeight(resource);
-
-        PersonResource resources = new PersonResource();
 
         return new PersonResource(
                 id,

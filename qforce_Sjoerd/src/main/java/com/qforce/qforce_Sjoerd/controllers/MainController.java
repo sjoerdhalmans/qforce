@@ -5,7 +5,9 @@ import com.qforce.qforce_Sjoerd.Logic.PersonServiceLogic;
 import com.qforce.qforce_Sjoerd.interfaces.domain.Person;
 import com.qforce.qforce_Sjoerd.models.PersonResource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.Console;
 import java.util.List;
@@ -28,7 +30,14 @@ public class MainController {
     @RequestMapping("/persons/{id}")
     PersonResource get(@PathVariable long id) throws JsonProcessingException {
         Optional<Person> person = personServiceLogic.get(id);
-        PersonResource resource = (PersonResource) person.get();
-        return resource;
+        if (person.isPresent()) {
+            PersonResource resource = (PersonResource) person.get();
+            return resource;
+        }
+        else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "entity not found"
+            );
+        }
     }
 }
