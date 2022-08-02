@@ -5,20 +5,31 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.qforce.qforce_Sjoerd.interfaces.domain.Gender;
 import com.qforce.qforce_Sjoerd.interfaces.domain.Movie;
 import com.qforce.qforce_Sjoerd.interfaces.domain.Person;
 import com.qforce.qforce_Sjoerd.models.MovieResource;
 import com.qforce.qforce_Sjoerd.models.PersonResource;
+import com.qforce.qforce_Sjoerd.repositories.LogRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
-
+@Service
 public class PersonServiceLogic implements com.qforce.qforce_Sjoerd.interfaces.service.PersonService {
     ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    private final DatabaseConnector databaseConnector;
+
+    @Autowired
+    public PersonServiceLogic(DatabaseConnector databaseConnector) {
+        this.databaseConnector = databaseConnector;
+    }
     @Override
     public List<Person> search(String query) throws JsonProcessingException {
+        databaseConnector.logSearch(query);
+
         List<Person> populatedPeople = new ArrayList<>();
         String uri = "https://swapi.dev/api/people?search=" + query;
         RestTemplate template = new RestTemplate();
@@ -74,6 +85,8 @@ public class PersonServiceLogic implements com.qforce.qforce_Sjoerd.interfaces.s
 
     @Override
     public Optional<Person> get(long id) throws JsonProcessingException {
+        databaseConnector.logGet(String.valueOf(id));
+
         String uri = "https://swapi.dev/api/people/" + id;
         RestTemplate template = new RestTemplate();
         String result = template.getForObject(uri, String.class);

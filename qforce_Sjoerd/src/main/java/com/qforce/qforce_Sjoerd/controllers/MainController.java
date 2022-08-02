@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.qforce.qforce_Sjoerd.Logic.PersonServiceLogic;
 import com.qforce.qforce_Sjoerd.interfaces.domain.Person;
 import com.qforce.qforce_Sjoerd.models.PersonResource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Console;
@@ -12,7 +13,12 @@ import java.util.Optional;
 
 @RestController
 public class MainController {
-    PersonServiceLogic personServiceLogic = new PersonServiceLogic();
+    private final PersonServiceLogic personServiceLogic;
+
+    @Autowired
+    public MainController(PersonServiceLogic personServiceLogic) {
+        this.personServiceLogic = personServiceLogic;
+    };
 
     @GetMapping("/persons")
     List<Person> search(@RequestParam String q) throws JsonProcessingException {
